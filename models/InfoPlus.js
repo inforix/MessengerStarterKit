@@ -30,18 +30,24 @@ module.exports.InfoPlusEvent = class {
 }
 
 module.exports.InfoPlusResponse = class {
+  constructor(){
+    this.cancel = false;
+    this.prompt = null;
+    this.detail = null;
+    this.formData = {};
+  }
 
   /**
    * Type: Boolean
    * Cancel the current doing if Cancel == True
    */
-  Cancel;
+  cancel;
 
   /**
    * Type: String
    * When you cancel the event, give the user a prompt
    */
-  Prompt;
+  prompt;
 
   /**
    * Type: Long
@@ -50,19 +56,19 @@ module.exports.InfoPlusResponse = class {
    * -1: kill
    * positive: seconds to extend
    */
-  Then;
+  then;
 
   /**
    * Type: Long
    * Then, after expiration, submit an action
    */
-  TheAction;
+  theAction;
 
   /**
    * Type: String
    * Detail will contain exception information
    */
-  Detail;
+  detail;
 
   /**
    * Type: Dictionary
@@ -70,7 +76,7 @@ module.exports.InfoPlusResponse = class {
    *   WorkflowStarting as Initialization data
    *   FieldChanging as auto fills
    */
-  FormData;
+  formData;
 
   /**
    * Type: List
@@ -79,7 +85,7 @@ module.exports.InfoPlusResponse = class {
    * 2.ON_STEP_RENDERING/ED, return CodeLists should be initialized.
    * 3.ON_FIELD_CHANGING, as above.
    */
-  Codes;
+  codes;
 }
 
 /**
@@ -145,7 +151,10 @@ class InfoPlusUser {
 
 module.exports.InfoPlusUser = InfoPlusUser;
 
-module.exports.InfoPlusRequest = class{
+class InfoPlusRequest{
+  constructor(){
+    this.formData = {};
+  }
   /**
    * Type: String
    * 版本号, 如 20120630
@@ -198,6 +207,8 @@ module.exports.InfoPlusRequest = class{
   release;
 
   static fromJSON(json){
-    return Object.assign(new InfoPlusRequest(), json);
+    return Object.assign(new InfoPlusRequest, json);
   }
 }
+
+module.exports.InfoPlusRequest = InfoPlusRequest;
