@@ -17,11 +17,11 @@ module.exports.workflow = async function(req, res){
     }
 
     var event = req.body.event; // 事件
-    var data = JSON.parse(req.body.data);
-    var ipreq = InfoPlusRequest.fromJSON(data);
+    var json = JSON.parse(req.body.data);
+    var ipreq = InfoPlusRequest.fromJSON(json);
 
     logger.debug('Event: ', event);
-    logger.debug('Data: ', data);
+    logger.debug('JSON: ', json);
     logger.debug('Request: %j', ipreq);
 
     if (event === InfoPlusEvent.INSTANCE_STARTING){

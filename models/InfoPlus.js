@@ -32,8 +32,6 @@ module.exports.InfoPlusEvent = class {
 module.exports.InfoPlusResponse = class {
   constructor(){
     this.cancel = false;
-    this.prompt = null;
-    this.detail = null;
     this.formData = {};
   }
 
