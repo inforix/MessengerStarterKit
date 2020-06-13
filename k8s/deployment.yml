@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workflow
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: MessengerStarterKit
+  name: MessengerStarterKit
+  namespace: workflow
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: MessengerStarterKit
+    # 版本号最好以日期为准
+    version: "20200609"
+  sessionAffinity: ClientIP
+  # Type 需要根据实际情况选择,可以为NodePort\LoadBalancer
+  type: NodePort
+  # type: LoadBalancer
+  # loadBalancerIP: "10.81.250.59"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: MessengerStarterKit
+    version: "20200609"
+  name: MessengerStarterKit
+  namespace: workflow
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MessengerStarterKit
+      version: "20200609"
+  template:
+    metadata:
+      labels:
+        app: MessengerStarterKit
+        version: "20200609"
+    spec:
+      containers:
+      # <VERSION>是为了GitLab替换用的
+      - image: repo.shmtu.edu.cn:8443/MessengerStarterKit:<VERSION>
+        imagePullPolicy: IfNotPresent
+        name: MessengerStarterKit
+        ports:
+        - containerPort: 3000
+          name: MessengerStarterKit-port
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 8Gi
+          requests:
+            cpu: 100m
+            memory: 4Gi
+        envFrom:
+          - secretRef:
+              name: MessengerStarterKitenv
+        env:
+          - name: HTTP_PORT
+            value: "3000"
+        volumeMounts:
+          - name: tz-config
+            mountPath: /etc/localtime
+      volumes:
+      - name: tz-config 
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai

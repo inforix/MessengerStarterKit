@@ -1,0 +1,48 @@
+image: docker:latest
+services:
+  - name: docker:dind
+    # command 参数根据实际情况选择,可以不用
+    command: ["--registry-mirror=https://repo.shmtu.edu.cn"]
+stages:
+  - build
+  - deploy
+
+variables:
+  # 镜像版本号,每一次构建,必须手动修改版本号,才能使得K8S更新
+  IMAGE_VERSION: "2020060902"
+  CONTAINER_IMAGE: MessengerStarterKit:${IMAGE_VERSION}
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://localhost:2375/
+  DOCKER_DRIVER: overlay2
+  REGISTRY_IMAGE: ${REGISTRY_SERVER}/MessengerStarterKit:${IMAGE_VERSION}
+  
+
+build:
+  stage: build
+  script: 
+    - docker build -t ${CONTAINER_IMAGE} .
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_SERVER}
+    - docker tag ${CONTAINER_IMAGE} ${REGISTRY_IMAGE}
+    - docker push ${REGISTRY_IMAGE}
+
+deploy:
+  #variables:
+  #  GIT_STRATEGY: none
+  stage: deploy
+  image: dtzar/helm-kubectl:2.14.1
+  # when: manual
+  script:
+    - kubectl version
+    - kubectl config set-cluster k8s --server="${K8S_SERVER}"
+    - kubectl config set clusters.k8s.certificate-authority-data "${K8S_CA_PEM}"
+    - kubectl config set-credentials gitlab --token="${K8S_USER_TOKEN}"
+    - kubectl config set-context default --cluster=k8s --user=gitlab
+    - kubectl config use-context default
+    # 下面注释掉的部分,是为了在K8S中保存密码等安全信息
+    #- kubectl -n workflow delete secret MessengerStarterKitenv --ignore-not-found
+    #- >
+    #  kubectl -n workflow create secret generic MessengerStarterKitenv 
+    #  --from-literal=MessengerStarterKit_PASS="${MessengerStarterKit_PASS}"
+    - sed -i "s/<VERSION>/${IMAGE_VERSION}/g" k8s/deployment.yml
+    - cat k8s/deployment.yml
+    - kubectl apply -f k8s/deployment.yml

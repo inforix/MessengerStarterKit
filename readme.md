@@ -59,7 +59,7 @@ json对象主要包含以下属性：
     "trueName" : "姓名"
   },
   "when" : 1589507194, // UNIX 时间戳
-  "formData" : {
+  "formData" : { // 表单数据
     "fieldXXX" : "VALUE"
   },
   "fields": [ // 字段信息数组
@@ -100,6 +100,21 @@ json对象主要包含以下属性：
   "release" : true // 是否已发布版本
 }
 ```
+
+#### 重复节表单数据
+
+重复节的表单数据是按照索引顺序排列的数组.譬如重复节中有t3\t4两个字段,实际填写了3次重复节,如:
+
+t3 | t4
+-- | -- 
+1 | 2
+3 | 4
+5 | 6
+
+则表单数据如下:
+
+req.formData.fieldt3 = ['1', '3', '5'];
+req.formData.fieldt4 = ['2', '4', '6'];
 
 ### InfoPlusResponse
 
@@ -148,3 +163,13 @@ mocha
 ```bash
 mocha -g 'workflowController'
 ```
+
+## 构建Docker镜像
+
+本StarterKit已经内置了一个Dockerfile文件,可以直接通过`docker build -t messengerStarterKit:1.0 ./ ` 来构建
+
+## 发布到Kubernetes集群中
+
+本StarterKit在k8s目录下包含了一个deployment.yml文件,其中包含了Service和Deployment.用户可以根据实际情况修改其中的配置.
+
+本StarterKit提供了通过GitLab的自动CI/CD来部署镜像到Kubernetes集群中.由于Kubernetes集群和Docker镜像注册器包含了用户名和密码,因此这几项信息在GitLab的CI/CD中配置环境变量.
